@@ -4,7 +4,6 @@
 2. Watch
 3. Custom resolvers (.editorconfig, .gitignore, .gitattributes, etc.)
 
-## spec
 
 ## apply
 

@@ -14,9 +14,13 @@ pub enum Cmd {
 		#[arg(short = 'n', long)]
 		template_name: Option<String>,
 
+		#[arg(short = 'f', long, default_value_t = false)]
+		force: bool,
+
 		#[arg(short, long, default_value_t = false)]
 		watch: bool,
 	},
+	ApplyAll {},
 	Edit {
 		template_name: Option<String>,
 	},

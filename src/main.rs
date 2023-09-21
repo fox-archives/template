@@ -1,6 +1,13 @@
-use std::{path::PathBuf, process};
-
 use clap::Parser;
+use dialoguer::Confirm;
+use serde::{Deserialize, Serialize};
+use std::{
+	collections::HashMap,
+	fs,
+	path::{self, Path, PathBuf},
+	process,
+	str::FromStr,
+};
 
 mod cli;
 mod commands;
@@ -8,7 +15,7 @@ mod config;
 mod util;
 
 use cli::{Cli, Cmd};
-use commands::apply;
+use commands::{apply, applygit};
 
 fn main() {
 	let cli = Cli::parse();
@@ -17,6 +24,7 @@ fn main() {
 		Cmd::Apply {
 			target_dir,
 			template_name,
+			force,
 			watch,
 		} => {
 			let config = config::get_config().expect("Failed to get config");
@@ -65,7 +73,32 @@ fn main() {
 				}
 			};
 
+			if !force {
+				let is_empty = PathBuf::from(target_dir)
+					.read_dir()
+					.unwrap()
+					.next()
+					.is_none();
+				if !is_empty {
+					eprintln!("Target directory is not empty: {}", &target_dir);
+
+					let input = Confirm::new()
+						.with_prompt("Do you want to continue?")
+						.default(false)
+						.show_default(false)
+						.interact()
+						.unwrap();
+					if input {
+						eprintln!("exiting...");
+						process::exit(1);
+					}
+				}
+			}
+
 			apply::run(source_dir, PathBuf::from(target_dir)).expect("Failed to run templater");
+		}
+		Cmd::ApplyAll {} => {
+			applygit::run().unwrap();
 		}
 		Cmd::Edit { template_name } => {
 			// run_template.command_new(template_name.clone()).unwrap();
